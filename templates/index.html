@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recognition System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #2196F3, #FF9800);
+            border-radius: 2px;
+        }
+        
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .video-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .video-container {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #video-feed {
+            width: 100%;
+            height: 450px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .video-container:hover #video-feed {
+            transform: scale(1.02);
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.3) 100%);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .video-container:hover .video-overlay {
+            opacity: 1;
+        }
+        
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #da190b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h3 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-list li:hover {
+            padding-left: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin: 0 -10px;
+            padding-right: 10px;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .status-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-item .label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .status-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4CAF50;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+        }
+        
+        .status.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+        }
+        
+        .people-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .person-tag {
+            background: linear-gradient(45deg, rgba(33, 150, 243, 0.3), rgba(33, 150, 243, 0.1));
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 1px solid rgba(33, 150, 243, 0.5);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .person-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+        
+        .debug-info {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .debug-info h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .debug-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .debug-stat {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .debug-stat .label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .debug-stat .value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #FFD700;
+        }
+        
+        .features-showcase {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .features-showcase h3 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .feature-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        
+        .feature-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: #e0e0e0;
+        }
+        
+        .add-person-info {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .add-person-info p {
+            margin-bottom: 10px;
+            color: #2196F3;
+            font-weight: 600;
+        }
+        
+        .add-person-info ol {
+            margin-left: 20px;
+            color: #e0e0e0;
+        }
+        
+        .add-person-info li {
+            margin-bottom: 5px;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .debug-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-brain"></i> Face Recognition System</h1>
+            <p>Advanced Face Recognition, Object Detection & Age Estimation</p>
+        </div>
+        
+        <div class="card debug-info">
+            <h3><i class="fas fa-cog"></i> System Status</h3>
+            <div class="debug-stats">
+                <div class="debug-stat">
+                    <div class="label">Known People</div>
+                    <div class="value" id="people-count">0</div>
+                </div>
+                <div class="debug-stat">
+                    <div class="label">Recognition Threshold</div>
+                    <div class="value">0.2</div>
+                </div>
+                <div class="debug-stat">
+                    <div class="label">Face Detection</div>
+                    <div class="value">Haar Cascade</div>
+                </div>
+                <div class="debug-stat">
+                    <div class="label">Object Detection</div>
+                    <div class="value" id="object-status">Ready</div>
+                </div>
+            </div>
+        </div>
+        
+    
+        
+        <div class="main-content">
+            <div class="video-section">
+                <div class="video-container">
+                    <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Video Feed">
+                    <div class="video-overlay">
+                        <div class="camera-controls">
+                            <button class="btn btn-primary" onclick="startCamera()">
+                                <i class="fas fa-play"></i> Start
+                            </button>
+                            <button class="btn btn-danger" onclick="stopCamera()">
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="card">
+                    <h3><i class="fas fa-star"></i> Features</h3>
+                    <ul class="feature-list">
+                        <li>Real-time Face Recognition</li>
+                        <li>Object Detection (80+ types)</li>
+                        <li>Accurate Age Estimation</li>
+                        <li>Live Video Processing</li>
+                        <li>Easy Person Management</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-chart-line"></i> Live Status</h3>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <div class="label">Camera</div>
+                            <div class="value" id="camera-status">Stopped</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="label">Recognition</div>
+                            <div class="value" id="recognition-status">Ready</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3><i class="fas fa-user-plus"></i> Add New Person</h3>
+            <div class="add-person-info">
+                <p><i class="fas fa-info-circle"></i> To add a new person:</p>
+                <ol>
+                    <li>Start the camera</li>
+                    <li>Position the person's face in the camera view</li>
+                    <li>Enter their name below and click "Add Person"</li>
+                    <li>The system will automatically capture and save their face</li>
+                </ol>
+            </div>
+            <div class="form-group">
+                <label for="person-name">Name:</label>
+                <input type="text" id="person-name" placeholder="Enter person's name">
+            </div>
+            <button class="btn btn-primary" onclick="addPerson()">
+                <i class="fas fa-plus"></i> Add Person
+            </button>
+            <div id="add-status"></div>
+        </div>
+        
+        <div class="card">
+            <h3><i class="fas fa-users"></i> Known People</h3>
+            <div id="people-list" class="people-list">
+                <!-- People will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let isCameraRunning = false;
+        let capturedImage = null;
+        
+        function startCamera() {
+            fetch('/start_camera', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        isCameraRunning = true;
+                        document.getElementById('camera-status').textContent = 'Running';
+                        document.getElementById('recognition-status').textContent = 'Active';
+                        document.getElementById('camera-status').classList.add('pulse');
+                        showStatus('Camera started successfully!', 'success');
+                    }
+                })
+                .catch(error => {
+                    showStatus('Failed to start camera', 'error');
+                });
+        }
+        
+        function stopCamera() {
+            fetch('/stop_camera', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        isCameraRunning = false;
+                        document.getElementById('camera-status').textContent = 'Stopped';
+                        document.getElementById('recognition-status').textContent = 'Ready';
+                        document.getElementById('camera-status').classList.remove('pulse');
+                        showStatus('Camera stopped', 'success');
+                    }
+                })
+                .catch(error => {
+                    showStatus('Failed to stop camera', 'error');
+                });
+        }
+        
+        function addPerson() {
+            const name = document.getElementById('person-name').value.trim();
+            
+            if (!name) {
+                showStatus('Please enter a name', 'error');
+                return;
+            }
+            
+            if (!isCameraRunning) {
+                showStatus('Please start the camera first', 'error');
+                return;
+            }
+            
+            // Get the current video frame automatically
+            const video = document.getElementById('video-feed');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth || video.width;
+            canvas.height = video.videoHeight || video.height;
+            
+            ctx.drawImage(video, 0, 0);
+            const capturedImage = canvas.toDataURL('image/jpeg');
+            
+            fetch('/add_person', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    image: capturedImage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus(data.message, 'success');
+                    document.getElementById('person-name').value = '';
+                    loadKnownPeople();
+                } else {
+                    showStatus(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showStatus('Failed to add person', 'error');
+            });
+        }
+        
+        function loadKnownPeople() {
+            fetch('/get_known_people')
+                .then(response => response.json())
+                .then(data => {
+                    const peopleList = document.getElementById('people-list');
+                    const peopleCount = document.getElementById('people-count');
+                    
+                    peopleList.innerHTML = '';
+                    peopleCount.textContent = data.people.length;
+                    
+                    data.people.forEach(person => {
+                        const tag = document.createElement('div');
+                        tag.className = 'person-tag';
+                        tag.textContent = person;
+                        peopleList.appendChild(tag);
+                    });
+                })
+                .catch(error => {
+                    console.error('Failed to load known people:', error);
+                });
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('add-status');
+            const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            statusDiv.innerHTML = '<div class="status ' + type + '"><i class="' + icon + '"></i>' + message + '</div>';
+            
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+        }
+        
+        // Load known people on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadKnownPeople();
+        });
+    </script>
+</body>
+</html>

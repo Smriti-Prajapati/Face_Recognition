@@ -1,0 +1,16 @@
+# Requirements for Python 3.13 compatibility
+# Install these packages one by one to avoid conflicts
+
+# Core packages
+numpy>=1.24.0
+opencv-python>=4.8.0
+Pillow>=9.0.0
+matplotlib>=3.5.0
+
+# Computer vision packages (may need special handling)
+# dlib - try: conda install -c conda-forge dlib
+# face-recognition - may need: pip install face-recognition --no-deps
+
+# Optional packages
+scipy>=1.9.0
+scikit-learn>=1.0.0
